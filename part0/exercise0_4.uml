@@ -1,0 +1,12 @@
+title Excercise 0.4
+
+note over browser:
+User types some text into the input
+then presses "Save"
+end note
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note
+note over server:
+server saves note and the time
+it was created in the notes array
+end note
+server-->browser: HTTP 302 Redirect to https://studies.cs.helsinki.fi/exampleapp/notes

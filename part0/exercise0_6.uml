@@ -1,0 +1,10 @@
+title Exercise 0.6
+
+note over browser: User enters a note and clicks "Save"
+note over browser:
+spa.js pushes notes into `notes` array 
+and redraws notes
+end note
+note over browser: spa.js pushes changes to server
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+server-->browser: HTTP 201

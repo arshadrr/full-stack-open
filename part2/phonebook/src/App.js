@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 
 function findMatchingPeople(people, pattern) {
   const patternRegExp = RegExp(`.*${pattern}.*`, 'i')
@@ -46,12 +47,21 @@ const People = ({peopleToShow}) => (
 )
 
 const App = () => {
-  const [people, setPeople] = useState([
-    {name: 'Arto Hellas', number: '040-1234567'}
-  ])
+  const [people, setPeople] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+
+  useEffect(
+    () => {
+      axios
+        .get('http://localhost:3001/persons')
+        .then(response => {
+          setPeople(response.data)
+        })
+    },
+    []
+  )
 
   const handleNameChange = (event) => {
     setNewName(event.target.value)

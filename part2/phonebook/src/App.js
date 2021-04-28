@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
+import phonebook from './services/phonebook.js'
 
 function findMatchingPeople(people, pattern) {
   const patternRegExp = RegExp(`.*${pattern}.*`, 'i')
@@ -38,13 +38,20 @@ const PersonForm = (props) => {
   )
 }
 
-const People = ({peopleToShow}) => (
-  <div>
-  {peopleToShow.map(person => (
-    <p key={person.name}>{person.name} {person.number}</p>
-  ))}
-  </div>
-)
+const People = (props) => {
+  const {
+    peopleToShow,
+    deleteHandler
+  } = props
+
+  return (
+    <div>
+    {peopleToShow.map(person => (
+      <div key={person.id}>{person.name} {person.number} <button onClick={() => deleteHandler(person)}>X</button></div>
+    ))}
+    </div>
+  )
+}
 
 const App = () => {
   const [people, setPeople] = useState([])
@@ -54,10 +61,9 @@ const App = () => {
 
   useEffect(
     () => {
-      axios
-        .get('http://localhost:3001/persons')
-        .then(response => {
-          setPeople(response.data)
+      phonebook.getAll()
+        .then(initialPeople => {
+          setPeople(initialPeople)
         })
     },
     []
@@ -73,22 +79,50 @@ const App = () => {
     setNewFilter(event.target.value)
   }
 
-  const addName = (event) => {
+  const addPerson = (event) => {
     event.preventDefault()
+    const CONFIRM_UPDATE =`"${newName}" is already in the phonebook, replace old phone number with new one?` 
+    let newPerson = {
+      name: newName,
+      number: newNumber
+    }
 
-    if(people.find(person => person.name === newName)){
-      alert(`"${newName}" is already in the phonebook`)
+    if(people.find(person => person.name === newPerson.name)){
+      let existingPerson = people.find(person => person.name === newPerson.name)
+      let updatePerson = {
+        ...newPerson,
+        id: existingPerson.id
+      }
+
+      if(!window.confirm(CONFIRM_UPDATE)){
+      return
+      }
+      phonebook
+        .updatePerson(updatePerson)
+        .then(returnedPerson => {
+          setPeople(people.map(person => person.id === returnedPerson.id ? returnedPerson : person))
+        })
+    }
+    else {
+      phonebook
+        .createPerson(newPerson)
+        .then(returnedPerson => {
+          setPeople(people.concat(returnedPerson))
+        }) 
+    }
+
+    setNewName('')
+    setNewNumber('')
+  }
+  const deletePerson = (person) => {
+    if(!window.confirm(`Delete ${person.name}`)){
       return
     }
 
-    setPeople(people.concat(
-      {
-        name: newName,
-        number: newNumber
-      }
-    ))
-    setNewName('')
-    setNewNumber('')
+    phonebook.deletePerson(person.id)
+      .then(response => setPeople(
+        people.filter(p => p.id !== person.id)
+      ))
   }
 
   const peopleToShow = findMatchingPeople(people, newFilter)
@@ -101,7 +135,7 @@ const App = () => {
 
       <h2>Add new numbers</h2>
       <PersonForm
-        submitHandler={addName}
+        submitHandler={addPerson}
 
         name={newName}
         nameChangeHandler={handleNameChange}
@@ -111,7 +145,10 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <People peopleToShow={peopleToShow} />
+      <People 
+        peopleToShow={peopleToShow}
+        deleteHandler={deletePerson}
+      />
     </div>
   )
 }

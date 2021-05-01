@@ -1,56 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import phonebook from './services/phonebook.js'
 
+import People from './components/People.js'
+import Filter from './components/Filter.js'
+import PersonForm from './components/PersonForm.js'
+import ErrorMessage from './components/ErrorMessage.js'
+import StatusMessage from './components/StatusMessage.js'
+
 function findMatchingPeople(people, pattern) {
   const patternRegExp = RegExp(`.*${pattern}.*`, 'i')
   return people.filter(person => patternRegExp.test(person.name))
-}
-
-const Filter = ({value, changeHandler}) => (
-      <form>
-        <div>
-          filter shown with: <input name="filter" type="text" value={value} onChange={changeHandler} />
-        </div>
-      </form>
-)
-
-const PersonForm = (props) => {
-  const {
-    submitHandler,
-    name,
-    nameChangeHandler,
-    number,
-    numberChangeHandler 
-  } = props
-
-  return (
-    <form onSubmit={submitHandler}>
-      <div>
-        name: <input name="name" type="text" value={name} onChange={nameChangeHandler} />
-      </div>
-      <div>
-        number: <input name="number" type="tel" value={number} onChange={numberChangeHandler} />
-      </div>
-      <div>
-        <button type="submit">Add</button>
-      </div>
-    </form>
-  )
-}
-
-const People = (props) => {
-  const {
-    peopleToShow,
-    deleteHandler
-  } = props
-
-  return (
-    <div>
-    {peopleToShow.map(person => (
-      <div key={person.id}>{person.name} {person.number} <button onClick={() => deleteHandler(person)}>X</button></div>
-    ))}
-    </div>
-  )
 }
 
 const App = () => {
@@ -58,6 +17,10 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [statusMessage, setStatusMessage] = useState(null)
+  const [errorTimerId, setErrorTimerId] = useState(null)
+  const [statusTimerId, setStatusTimerId] = useState(null)
 
   useEffect(
     () => {
@@ -68,6 +31,31 @@ const App = () => {
     },
     []
   )
+
+  const showErrorMessage = (message) => {
+    if(errorTimerId !== null){
+      window.clearTimeout(errorTimerId)
+    }
+
+    setErrorMessage(message)
+    const timerId = window.setTimeout(
+      () => setErrorMessage(null),
+      5000
+    )
+    setErrorTimerId(timerId)
+  }
+  const showStatusMessage = (message) => {
+    if(statusTimerId !== null){
+      window.clearTimeout(statusTimerId)
+    }
+
+    setStatusMessage(message)
+    const timerId = window.setTimeout(
+      () => setStatusMessage(null),
+      5000
+    )
+    setStatusTimerId(timerId)
+  }
 
   const handleNameChange = (event) => {
     setNewName(event.target.value)
@@ -101,6 +89,18 @@ const App = () => {
         .updatePerson(updatePerson)
         .then(returnedPerson => {
           setPeople(people.map(person => person.id === returnedPerson.id ? returnedPerson : person))
+          showStatusMessage(`Updated ${returnedPerson.name}`)
+        })
+        .catch(err => {
+          if(err.response.status === 404) {
+            showErrorMessage(`Information on ${updatePerson.name} has already been removed from the server`)
+            setPeople(
+              people.filter(p => p.id !== updatePerson.id)
+            )
+          }
+          else {
+            throw err
+          }
         })
     }
     else {
@@ -108,6 +108,7 @@ const App = () => {
         .createPerson(newPerson)
         .then(returnedPerson => {
           setPeople(people.concat(returnedPerson))
+          showStatusMessage(`Added ${returnedPerson.name}`)
         }) 
     }
 
@@ -120,9 +121,12 @@ const App = () => {
     }
 
     phonebook.deletePerson(person.id)
-      .then(response => setPeople(
-        people.filter(p => p.id !== person.id)
-      ))
+      .then(response => {
+        setPeople(
+          people.filter(p => p.id !== person.id)
+        )
+        showErrorMessage(`Deteled ${person.name}`)
+      })
   }
 
   const peopleToShow = findMatchingPeople(people, newFilter)
@@ -131,6 +135,8 @@ const App = () => {
     <div>
       <h1>Phonebook</h1>
 
+      <ErrorMessage message={errorMessage} />
+      <StatusMessage message={statusMessage} />
       <Filter value={newFilter} changeHandler={handleFilterChange} />
 
       <h2>Add new numbers</h2>

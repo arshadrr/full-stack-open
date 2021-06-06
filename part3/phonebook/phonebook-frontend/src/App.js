@@ -125,7 +125,7 @@ const App = () => {
         setPeople(
           people.filter(p => p.id !== person.id)
         )
-        showErrorMessage(`Deteled ${person.name}`)
+        showErrorMessage(`Deleted ${person.name}`)
       })
   }
 

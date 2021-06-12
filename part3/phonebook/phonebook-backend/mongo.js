@@ -49,9 +49,7 @@ function main () {
 function list_phonebook_entries () {
   Person.find({}).then(people => {
     console.log("phonebook:")
-    people.forEach(person => {
-      console.log(`${person.name} ${person.phone_number}`)
-    })
+    people.forEach(p => console.log(p))
     mongoose.connection.close()
   })
 }

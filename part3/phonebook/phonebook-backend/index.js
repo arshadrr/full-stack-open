@@ -26,7 +26,7 @@ app.get("/api/persons", (request, response) => {
   Person.find({}).then(persons => response.json(persons))
 })
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   const id = request.params.id
 
   Person.findById(id)
@@ -38,12 +38,12 @@ app.get("/api/persons/:id", (request, response) => {
         response.status(404).json({error: "Person not found"})
       }
     })
-    .catch(err => {
-      response.status(400).json({error: "Invalid person id"})
+    .catch(error => {
+      next(error)
     })
 })
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id
 
   Person.findByIdAndDelete(id)
@@ -55,13 +55,13 @@ app.delete("/api/persons/:id", (request, response) => {
         response.status(404).json({error: "Person not found"})
       }
     })
-    .catch(err => {
-      response.status(400).json({error: "Invalid person id"})
+    .catch(error => {
+      next(error)
     })
 })
 
 app.post("/api/persons", (request, response) => {
-  let newPerson = Person({
+  const newPerson = Person({
     name: request.body.name,
     number: request.body.number
   })
@@ -69,9 +69,40 @@ app.post("/api/persons", (request, response) => {
   newPerson.save()
     .then(savedPerson => response.json(savedPerson))
     .catch(err => {
-      response.status(400).json({error: "Name of number missing"})
+      response.status(400).json({error: "Name or number missing"})
     })
 })
+
+app.put("/api/persons/:id", (request, response, next) => {
+  Person.findByIdAndUpdate(
+    request.params.id,
+    {
+      "name": request.body.name,
+      "number": request.body.number
+    },
+    {"new": true}
+  )
+    .then(updatedPerson => {
+      if (updatedPerson === null) {
+        response.status(404).json({error: "Person not found"})
+      } else {
+        response.json(updatedPerson)
+      }
+    })
+    .catch(error => {
+      next(error)
+    })
+})
+
+const errorHandler = (error, request, response, next) => {
+  if (error.name === "CastError") {
+    response.status(400).json({error: "Malformed ID"})
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => console.log(`started on port ${PORT}`))

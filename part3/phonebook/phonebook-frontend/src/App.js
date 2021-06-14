@@ -109,7 +109,10 @@ const App = () => {
         .then(returnedPerson => {
           setPeople(people.concat(returnedPerson))
           showStatusMessage(`Added ${returnedPerson.name}`)
-        }) 
+        })
+        .catch(error => {
+          showErrorMessage(error.response.data.error)
+        })
     }
 
     setNewName('')

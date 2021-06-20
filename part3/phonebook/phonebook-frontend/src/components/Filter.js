@@ -1,11 +1,11 @@
 import React from 'react'
 
 const Filter = ({value, changeHandler}) => (
-      <form>
-        <div>
+  <form>
+    <div>
           filter shown with: <input name="filter" type="text" value={value} onChange={changeHandler} />
-        </div>
-      </form>
+    </div>
+  </form>
 )
 
 export default Filter

@@ -6,7 +6,7 @@ const PersonForm = (props) => {
     name,
     nameChangeHandler,
     number,
-    numberChangeHandler 
+    numberChangeHandler
   } = props
 
   return (

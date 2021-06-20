@@ -8,11 +8,11 @@ const People = (props) => {
 
   return (
     <div>
-    {peopleToShow.map(person => (
-      <div key={person.id}>{person.name} {person.number}
-        <button onClick={() => deleteHandler(person)}>X</button>
-      </div>
-    ))}
+      {peopleToShow.map(person => (
+        <div key={person.id}>{person.name} {person.number}
+          <button onClick={() => deleteHandler(person)}>X</button>
+        </div>
+      ))}
     </div>
   )
 }

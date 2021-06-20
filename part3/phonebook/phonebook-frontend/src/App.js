@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react'
 import phonebook from './services/phonebook.js'
 
 import People from './components/People.js'
@@ -69,7 +69,7 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    const CONFIRM_UPDATE =`"${newName}" is already in the phonebook, replace old phone number with new one?` 
+    const CONFIRM_UPDATE =`"${newName}" is already in the phonebook, replace old phone number with new one?`
     let newPerson = {
       name: newName,
       number: newNumber
@@ -83,7 +83,7 @@ const App = () => {
       }
 
       if(!window.confirm(CONFIRM_UPDATE)){
-      return
+        return
       }
       phonebook
         .updatePerson(updatePerson)
@@ -124,7 +124,7 @@ const App = () => {
     }
 
     phonebook.deletePerson(person.id)
-      .then(response => {
+      .then(() => {
         setPeople(
           people.filter(p => p.id !== person.id)
         )
@@ -154,7 +154,7 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <People 
+      <People
         peopleToShow={peopleToShow}
         deleteHandler={deletePerson}
       />
@@ -162,4 +162,4 @@ const App = () => {
   )
 }
 
-export default App;
+export default App
